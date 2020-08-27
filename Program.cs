@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +7,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Npgsql;
+using NpgsqlTypes;
 
 namespace tasks_list
 {
@@ -22,5 +25,21 @@ namespace tasks_list
                 {
                     webBuilder.UseStartup<Startup>();
                 });
+
+
+        public static NpgsqlConnection CreateConnection()
+        {
+            var connectionStringBuilder = new NpgsqlConnectionStringBuilder
+            {
+                Host = "localhost",
+                Port = 5432,
+                Username = "postgres",
+                Password = "admin",
+                Database = "ToDoDB"
+            };
+
+            return new NpgsqlConnection(connectionStringBuilder.ToString()); 
+        }
     }
+
 }
