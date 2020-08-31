@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using tasks_list.src.Models;
 using tasks_list.Services;
+using System.Linq;
 using System;
 
 namespace tasks_list.Controllers
@@ -10,59 +11,64 @@ namespace tasks_list.Controllers
     [Route("api/")]
     public class TaskController : Controller
     {
-        private static TaskService service;
+        private static TaskService taskService;
+        private static TaskListService taskListService;
 
         static TaskController()
         {
-            service = new TaskService();
+            taskService = new TaskService();
+            taskListService = new TaskListService();
         }
 
         [HttpGet("tasks/{id}")]
         public TaskDto GetTaskById(int id)
         {
-            return service.GetById(id);
+            return taskService.GetById(id);
         }
     
         [HttpGet("tasks")]
         public IEnumerable<TaskDto> GetAllTasks()
         {
-            return service.GetAll();
+            return taskService.GetAll();
         }
 
         [HttpGet("lists/{listId}/tasks")]
-        public IEnumerable<TaskDto> GetAllListTasks(int listId)
+        public TaskListDto GetAllListTasks(int listId)
         {
-            return service.GetByListId(listId);
+            TaskListDto taskList = taskListService.GetById(listId);
+            IEnumerable<TaskDto> tasks= taskService.GetByListId(listId);
+            taskList.tasks = tasks.ToList();
+            return taskList;
         }
 
         [HttpPost("lists/{listId}/tasks")]
         public void CreateNewTask(TaskDto task, int listId)
         {
-            service.CreateNew(task, listId);
+            taskService.CreateNew(task, listId);
         }
 
         [HttpPost("lists")]
         public void CreateNewTaskList(TaskListDto tasklist)
         {
-            service.CreateNewList(tasklist);
+            taskListService.CreateNew(tasklist);
         }
 
         [HttpPatch("lists/{listId}/tasks/{id}")]
         public void ChangeTaskStatus(int id, TaskStatus status)
         {
-            service.ChangeStatusById(id, status.isDone);
+            taskService.ChangeStatusById(id, status.isDone);
         }
 
-        [HttpDelete("lists/{listId}/tasks/{id}")]
+        [HttpDelete("tasks/{id}")]
         public void RemoveTaskById(int id)
         {
-            service.RemoveById(id);
+            taskService.RemoveById(id);
         }
-        
+
         [HttpDelete("lists/{listId}")]
         public void RemoveTaskListById(int listId)
         {
-            service.RemoveListById(listId);
+            taskListService.RemoveById(listId);
         }
     }
 }

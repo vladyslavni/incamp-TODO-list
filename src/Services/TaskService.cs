@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System;
 using Npgsql;
 using NpgsqlTypes;
+using tasks_list.utils;
 
 namespace tasks_list.Services
 {
@@ -13,7 +14,7 @@ namespace tasks_list.Services
 
         public TaskService()
         {
-            conn = Program.connection;
+            conn = PGConnection.Get();
         }
 
         public TaskDto GetById(int id)
@@ -73,19 +74,6 @@ namespace tasks_list.Services
             }
         }
 
-        public void CreateNewList(TaskListDto tasklist)
-        {
-            using(NpgsqlCommand command = new NpgsqlCommand(
-                "insert into tasks_list(name) values (@name);", conn))
-            {
-                command.Parameters.AddWithValue("name", NpgsqlDbType.Text, tasklist.name);
-
-                command.Prepare();
-
-                command.ExecuteNonQuery();  
-            }
-        }
-
         public void ChangeStatusById(int id, bool status)
         {
             NpgsqlCommand command = new NpgsqlCommand("update tasks set is_done = @is_done where id = @id", conn);
@@ -99,16 +87,6 @@ namespace tasks_list.Services
         public void RemoveById(int id)
         {
             NpgsqlCommand command = new NpgsqlCommand("delete from tasks where id = @id", conn);
-            
-            command.Parameters.AddWithValue("id", NpgsqlDbType.Integer, id);
-
-            command.ExecuteNonQuery();  
-        }
-        
-        public void RemoveListById(int id)
-        {
-
-            NpgsqlCommand command = new NpgsqlCommand("delete from tasks_list where id = @id", conn);
             
             command.Parameters.AddWithValue("id", NpgsqlDbType.Integer, id);
 

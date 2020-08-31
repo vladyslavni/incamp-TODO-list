@@ -7,22 +7,17 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Npgsql;
-using NpgsqlTypes;
+using tasks_list.utils;
 
 namespace tasks_list
 {
     public class Program
     {
-        public static NpgsqlConnection connection;
         public static void Main(string[] args)
         {
-            connection = CreateConnection();
-            connection.Open();
-
             CreateHostBuilder(args).Build().Run();
 
-            connection.Close();
+            PGConnection.Close();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -31,21 +26,6 @@ namespace tasks_list
                 {
                     webBuilder.UseStartup<Startup>();
                 });
-
-
-        public static NpgsqlConnection CreateConnection()
-        {
-            var connectionStringBuilder = new NpgsqlConnectionStringBuilder
-            {
-                Host = "localhost",
-                Port = 5432,
-                Username = "postgres",
-                Password = "admin",
-                Database = "ToDoDB"
-            };
-
-            return new NpgsqlConnection(connectionStringBuilder.ToString()); 
-        }
     }
 
 }
