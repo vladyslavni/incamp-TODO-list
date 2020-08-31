@@ -11,44 +11,44 @@ namespace tasks_list.Controllers
     [Route("api/")]
     public class TaskController : Controller
     {
-        private static TaskService taskService;
-        private static TaskListService taskListService;
+        private TaskService taskService;
+        private TaskListService taskListService;
 
-        static TaskController()
+        public TaskController(TaskService taskService, TaskListService taskListService)
         {
-            taskService = new TaskService();
-            taskListService = new TaskListService();
+            this.taskService = taskService;
+            this.taskListService = taskListService;
         }
 
         [HttpGet("tasks/{id}")]
-        public TaskDto GetTaskById(int id)
+        public TaskItem GetTaskById(int id)
         {
             return taskService.GetById(id);
         }
     
         [HttpGet("tasks")]
-        public IEnumerable<TaskDto> GetAllTasks()
+        public IEnumerable<TaskItem> GetAllTasks()
         {
             return taskService.GetAll();
         }
 
         [HttpGet("lists/{listId}/tasks")]
-        public TaskListDto GetAllListTasks(int listId)
+        public TaskList GetAllListTasks(int listId)
         {
-            TaskListDto taskList = taskListService.GetById(listId);
-            IEnumerable<TaskDto> tasks= taskService.GetByListId(listId);
-            taskList.tasks = tasks.ToList();
+            TaskList taskList = taskListService.GetById(listId);
+            IEnumerable<TaskItem> tasks= taskService.GetByListId(listId);
+            taskList.Tasks = tasks.ToList();
             return taskList;
         }
 
         [HttpPost("lists/{listId}/tasks")]
-        public void CreateNewTask(TaskDto task, int listId)
+        public void CreateNewTask(TaskItem task, int listId)
         {
             taskService.CreateNew(task, listId);
         }
 
         [HttpPost("lists")]
-        public void CreateNewTaskList(TaskListDto tasklist)
+        public void CreateNewTaskList(TaskList tasklist)
         {
             taskListService.CreateNew(tasklist);
         }
@@ -56,7 +56,7 @@ namespace tasks_list.Controllers
         [HttpPatch("lists/{listId}/tasks/{id}")]
         public void ChangeTaskStatus(int id, TaskStatus status)
         {
-            taskService.ChangeStatusById(id, status.isDone);
+            taskService.ChangeStatusById(id, status.IsDone);
         }
 
         [HttpDelete("tasks/{id}")]

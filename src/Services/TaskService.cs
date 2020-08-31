@@ -17,7 +17,7 @@ namespace tasks_list.Services
             conn = PGConnection.Get();
         }
 
-        public TaskDto GetById(int id)
+        public TaskItem GetById(int id)
         {
             NpgsqlCommand command = new NpgsqlCommand("select id, title, description, " + 
             "owner, is_done, list_id from tasks where id = @id", conn);
@@ -31,7 +31,7 @@ namespace tasks_list.Services
             }
         }
         
-        public IEnumerable<TaskDto> GetByListId(int listId)
+        public IEnumerable<TaskItem> GetByListId(int listId)
         {
             NpgsqlCommand command = new NpgsqlCommand("select id, title, description, " + 
             "owner, is_done, list_id from tasks where list_id = @list_id", conn);
@@ -45,7 +45,7 @@ namespace tasks_list.Services
             }
         }
 
-        public IEnumerable<TaskDto> GetAll()
+        public IEnumerable<TaskItem> GetAll()
         {
             NpgsqlCommand command = new NpgsqlCommand("select id, title, description, " + 
             "owner, is_done, list_id from tasks", conn);
@@ -57,15 +57,15 @@ namespace tasks_list.Services
             }
         }
 
-        public void CreateNew(TaskDto task, int listId)
+        public void CreateNew(TaskItem task, int listId)
         {
             Console.WriteLine(listId);
             using(NpgsqlCommand command = new NpgsqlCommand(
                 "insert into tasks(title, description, owner, list_id) values (@title, @description, @owner, @list_id);", conn))
             {
-                command.Parameters.AddWithValue("title", NpgsqlDbType.Text, task.title);
-                command.Parameters.AddWithValue("description", NpgsqlDbType.Text, task.description);
-                command.Parameters.AddWithValue("owner", NpgsqlDbType.Text, task.owner);
+                command.Parameters.AddWithValue("title", NpgsqlDbType.Text, task.Title);
+                command.Parameters.AddWithValue("description", NpgsqlDbType.Text, task.Description);
+                command.Parameters.AddWithValue("owner", NpgsqlDbType.Text, task.Owner);
                 command.Parameters.AddWithValue("list_id", NpgsqlDbType.Integer, listId);
 
                 command.Prepare();

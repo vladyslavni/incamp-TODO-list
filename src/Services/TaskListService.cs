@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using tasks_list.utils;
 using Npgsql;
 using NpgsqlTypes;
+using System.Data.Common;
 
 namespace tasks_list.Services
 {
@@ -16,7 +17,7 @@ namespace tasks_list.Services
             conn = PGConnection.Get();
         }
 
-        public TaskListDto GetById(int id)
+        public TaskList GetById(int id)
         {
             NpgsqlCommand command = new NpgsqlCommand("select id, name from tasks_list where id = @id", conn);
             
@@ -29,23 +30,23 @@ namespace tasks_list.Services
             }
         }
 
-        public IEnumerable<TaskListDto> GetAll()
+        public IEnumerable<TaskList> GetAll()
         {
             NpgsqlCommand command = new NpgsqlCommand("select id, name from tasks_list", conn);
             
-            using (NpgsqlDataReader dr = command.ExecuteReader())
+            using (DbDataReader dr = command.ExecuteReader())
             {
                 while (dr.Read())
                     yield return TaskListMapper.map(dr);
             }
         }
 
-        public void CreateNew(TaskListDto tasklist)
+        public void CreateNew(TaskList tasklist)
         {
             using(NpgsqlCommand command = new NpgsqlCommand(
                 "insert into tasks_list(name) values (@name);", conn))
             {
-                command.Parameters.AddWithValue("name", NpgsqlDbType.Text, tasklist.name);
+                command.Parameters.AddWithValue("name", NpgsqlDbType.Text, tasklist.Name);
 
                 command.ExecuteNonQuery();  
             }
@@ -53,7 +54,6 @@ namespace tasks_list.Services
 
         public void RemoveById(int id)
         {
-
             using(NpgsqlCommand command = new NpgsqlCommand("delete from tasks_list where id = @id", conn))
             {
             command.Parameters.AddWithValue("id", NpgsqlDbType.Integer, id);
