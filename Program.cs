@@ -14,9 +14,15 @@ namespace tasks_list
 {
     public class Program
     {
+        public static NpgsqlConnection connection;
         public static void Main(string[] args)
         {
+            connection = CreateConnection();
+            connection.Open();
+
             CreateHostBuilder(args).Build().Run();
+
+            connection.Close();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

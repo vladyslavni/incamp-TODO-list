@@ -1,8 +1,7 @@
 using Npgsql;
-using NpgsqlTypes;
-using tasks_list.Models;
+using tasks_list.src.Models;
 
-namespace tasks_list
+namespace tasks_list.src.Mappers
 {
     public class TaskMapper
     {
@@ -15,6 +14,7 @@ namespace tasks_list
             task.description = dataReader.GetString(2);
             task.owner = dataReader.GetString(3);
             task.isDone = dataReader.GetBoolean(4);
+            task.list_id = dataReader.GetInt64(5);
             
             return task;
         }
