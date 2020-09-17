@@ -4,6 +4,8 @@ using tasks_list.src.Models;
 using tasks_list.Services;
 using System.Linq;
 using System;
+using System.Threading.Tasks;
+
 
 namespace tasks_list.Controllers
 {
@@ -20,29 +22,19 @@ namespace tasks_list.Controllers
             this.taskListService = taskListService;
         }
 
-        [HttpGet("tasks/{id}")]
-        public TaskItem GetTaskById(int id)
+        [HttpGet("lists")]
+        public async IAsyncEnumerable<TaskList> GetAllLists()
         {
-            return taskService.GetById(id);
-        }
-    
-        [HttpGet("tasks")]
-        public IEnumerable<TaskItem> GetAllTasks()
-        {
-            return taskService.GetAll();
-        }
-
-        [HttpGet("lists/{listId}/tasks")]
-        public TaskList GetAllListTasks(int listId)
-        {
-            TaskList taskList = taskListService.GetById(listId);
-            IEnumerable<TaskItem> tasks= taskService.GetByListId(listId);
-            taskList.Tasks = tasks.ToList();
-            return taskList;
+            IEnumerable<TaskList> lists = taskListService.GetAll().ToEnumerable();
+            foreach (var list in lists)
+            {
+                list.Tasks = await taskService.GetByListId(list.Id).ToListAsync();
+                yield return list;
+            }
         }
 
         [HttpPost("lists/{listId}/tasks")]
-        public void CreateNewTask(TaskItem task, int listId)
+        public void CreateNewTask(TaskItem task, long listId)
         {
             taskService.CreateNew(task, listId);
         }
@@ -54,19 +46,19 @@ namespace tasks_list.Controllers
         }
 
         [HttpPatch("lists/{listId}/tasks/{id}")]
-        public void ChangeTaskStatus(int id, TaskStatus status)
+        public void ChangeTaskStatus(long id, CompleteStatus status)
         {
             taskService.ChangeStatusById(id, status.IsDone);
         }
 
         [HttpDelete("tasks/{id}")]
-        public void RemoveTaskById(int id)
+        public void RemoveTaskById(long id)
         {
             taskService.RemoveById(id);
         }
 
         [HttpDelete("lists/{listId}")]
-        public void RemoveTaskListById(int listId)
+        public void RemoveTaskListById(long listId)
         {
             taskListService.RemoveById(listId);
         }

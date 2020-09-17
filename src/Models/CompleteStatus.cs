@@ -1,6 +1,6 @@
 namespace tasks_list.src.Models
 {
-    public struct TaskStatus
+    public struct CompleteStatus
     {
         public bool IsDone {get; set;}
     }

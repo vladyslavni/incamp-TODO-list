@@ -36,5 +36,22 @@ namespace tasks_list.utils
         {
             connection.Close();
         }
+
+
+        // public static NpgsqlConnection CreateConnection()
+        // {
+        //     var connectionStringBuilder = new NpgsqlConnectionStringBuilder
+        //     {
+        //         Host = "localhost",
+        //         Port = 5432,
+        //         Username = "postgres",
+        //         Password = "admin",
+        //         Database = "ToDoDB"
+        //     };
+
+        //     NpgsqlConnection connection = new NpgsqlConnection(connectionStringBuilder.ToString());
+        //     connection.OpenAsync();
+        //     return connection;
+        // }
     }
 }

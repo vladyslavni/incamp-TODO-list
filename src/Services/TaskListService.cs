@@ -1,3 +1,5 @@
+using System;
+using System.Globalization;
 using tasks_list.src.Models;
 using tasks_list.src.Mappers;
 using System.Collections.Generic;
@@ -17,46 +19,34 @@ namespace tasks_list.Services
             conn = PGConnection.Get();
         }
 
-        public TaskList GetById(int id)
-        {
-            NpgsqlCommand command = new NpgsqlCommand("select id, name from tasks_list where id = @id", conn);
-            
-            command.Parameters.AddWithValue("id", NpgsqlDbType.Integer, id);
-            
-            using (NpgsqlDataReader dr = command.ExecuteReader())
-            {
-                dr.Read();
-                return TaskListMapper.map(dr);
-            }
-        }
-
-        public IEnumerable<TaskList> GetAll()
+        public async IAsyncEnumerable<TaskList> GetAll()
         {
             NpgsqlCommand command = new NpgsqlCommand("select id, name from tasks_list", conn);
             
-            using (DbDataReader dr = command.ExecuteReader())
+            using (DbDataReader dr = await command.ExecuteReaderAsync())
             {
-                while (dr.Read())
+                while (await dr.ReadAsync())
                     yield return TaskListMapper.map(dr);
             }
         }
-
         public void CreateNew(TaskList tasklist)
         {
+            Console.WriteLine(tasklist.Name);
             using(NpgsqlCommand command = new NpgsqlCommand(
                 "insert into tasks_list(name) values (@name);", conn))
             {
+                Console.WriteLine("Operation is done?");
                 command.Parameters.AddWithValue("name", NpgsqlDbType.Text, tasklist.Name);
-
                 command.ExecuteNonQuery();  
+                Console.WriteLine("Operation is done!");
             }
         }
 
-        public void RemoveById(int id)
+        public void RemoveById(long id)
         {
             using(NpgsqlCommand command = new NpgsqlCommand("delete from tasks_list where id = @id", conn))
             {
-            command.Parameters.AddWithValue("id", NpgsqlDbType.Integer, id);
+            command.Parameters.AddWithValue("id", NpgsqlDbType.Bigint, id);
 
             command.ExecuteNonQuery();  
             }

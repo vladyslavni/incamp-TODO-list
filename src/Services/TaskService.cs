@@ -5,6 +5,7 @@ using System;
 using Npgsql;
 using NpgsqlTypes;
 using tasks_list.utils;
+using System.Threading.Tasks;
 
 namespace tasks_list.Services
 {
@@ -17,56 +18,54 @@ namespace tasks_list.Services
             conn = PGConnection.Get();
         }
 
-        public TaskItem GetById(int id)
+        public async Task<TaskItem> GetById(long id)
         {
-            NpgsqlCommand command = new NpgsqlCommand("select id, title, description, " + 
-            "owner, is_done, list_id from tasks where id = @id", conn);
+            NpgsqlCommand command = new NpgsqlCommand("select id, title, " + 
+            "is_done, list_id from tasks where id = @id", conn);
             
             command.Parameters.AddWithValue("id", NpgsqlDbType.Integer, id);
             
-            using (NpgsqlDataReader dr = command.ExecuteReader())
+            using (NpgsqlDataReader dr = await command.ExecuteReaderAsync())
             {
-                dr.Read();
+                await dr.ReadAsync();
                 return TaskMapper.map(dr);
             }
         }
         
-        public IEnumerable<TaskItem> GetByListId(int listId)
+        public async IAsyncEnumerable<TaskItem> GetByListId(long listId)
         {
-            NpgsqlCommand command = new NpgsqlCommand("select id, title, description, " + 
-            "owner, is_done, list_id from tasks where list_id = @list_id", conn);
+            NpgsqlCommand command = new NpgsqlCommand("select id, title, " +
+                "is_done, list_id from tasks where list_id = @list_id", conn);
             
-            command.Parameters.AddWithValue("list_id", NpgsqlDbType.Integer, listId);
+            command.Parameters.AddWithValue("list_id", NpgsqlDbType.Bigint, listId);
 
-            using (NpgsqlDataReader dr = command.ExecuteReader())
+            using (NpgsqlDataReader dr = await command.ExecuteReaderAsync())
             {
-                while (dr.Read())
+                while (await dr.ReadAsync())
                     yield return TaskMapper.map(dr);
             }
         }
 
-        public IEnumerable<TaskItem> GetAll()
+        public async IAsyncEnumerable<TaskItem> GetAll()
         {
-            NpgsqlCommand command = new NpgsqlCommand("select id, title, description, " + 
-            "owner, is_done, list_id from tasks", conn);
+            NpgsqlCommand command = new NpgsqlCommand("select id, title, " + 
+            "is_done, list_id from tasks", conn);
             
-            using (NpgsqlDataReader dr = command.ExecuteReader())
+            using (NpgsqlDataReader dr = await command.ExecuteReaderAsync())
             {
-                while (dr.Read())
+                while (await dr.ReadAsync())
                     yield return TaskMapper.map(dr);
             }
         }
 
-        public void CreateNew(TaskItem task, int listId)
+        public void CreateNew(TaskItem task, long listId)
         {
             Console.WriteLine(listId);
             using(NpgsqlCommand command = new NpgsqlCommand(
-                "insert into tasks(title, description, owner, list_id) values (@title, @description, @owner, @list_id);", conn))
+                "insert into tasks(title, list_id) values (@title, @list_id);", conn))
             {
                 command.Parameters.AddWithValue("title", NpgsqlDbType.Text, task.Title);
-                command.Parameters.AddWithValue("description", NpgsqlDbType.Text, task.Description);
-                command.Parameters.AddWithValue("owner", NpgsqlDbType.Text, task.Owner);
-                command.Parameters.AddWithValue("list_id", NpgsqlDbType.Integer, listId);
+                command.Parameters.AddWithValue("list_id", NpgsqlDbType.Bigint, listId);
 
                 command.Prepare();
 
@@ -74,21 +73,21 @@ namespace tasks_list.Services
             }
         }
 
-        public void ChangeStatusById(int id, bool status)
+        public void ChangeStatusById(long id, bool status)
         {
             NpgsqlCommand command = new NpgsqlCommand("update tasks set is_done = @is_done where id = @id", conn);
             
             command.Parameters.AddWithValue("is_done", NpgsqlDbType.Boolean, status);
-            command.Parameters.AddWithValue("id", NpgsqlDbType.Integer, id);
+            command.Parameters.AddWithValue("id", NpgsqlDbType.Bigint, id);
 
             command.ExecuteNonQuery();  
         }
 
-        public void RemoveById(int id)
+        public void RemoveById(long id)
         {
             NpgsqlCommand command = new NpgsqlCommand("delete from tasks where id = @id", conn);
             
-            command.Parameters.AddWithValue("id", NpgsqlDbType.Integer, id);
+            command.Parameters.AddWithValue("id", NpgsqlDbType.Bigint, id);
 
             command.ExecuteNonQuery();  
         }

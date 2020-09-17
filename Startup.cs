@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using tasks_list.utils;
+using tasks_list.Services;
 
 namespace tasks_list
 {
@@ -23,7 +25,11 @@ namespace tasks_list
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<TaskListService>();
+            services.AddScoped<TaskService>();
+
             services.AddControllersWithViews();
+            services.AddCors();
             
         }
 
@@ -34,14 +40,10 @@ namespace tasks_list
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
+
+            app.UseCors(
+                options => options.SetIsOriginAllowed(x => _ = true).AllowAnyMethod().AllowAnyHeader().AllowCredentials()
+            );
 
             app.UseRouting();
 
