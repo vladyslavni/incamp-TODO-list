@@ -19,26 +19,36 @@ namespace tasks_list.Services
             conn = PGConnection.Get();
         }
 
-        public async IAsyncEnumerable<TaskList> GetAll()
+        public TaskList GetById(long id)
+        {
+            NpgsqlCommand command = new NpgsqlCommand("select id, name from tasks_list where id = @id", conn);
+            
+            command.Parameters.AddWithValue("id", NpgsqlDbType.Bigint, id);
+            
+            using (NpgsqlDataReader dr = command.ExecuteReader())
+            {
+                dr.Read();
+                return TaskListMapper.map(dr);
+            }
+        }
+
+        public IEnumerable<TaskList> GetAll()
         {
             NpgsqlCommand command = new NpgsqlCommand("select id, name from tasks_list", conn);
             
-            using (DbDataReader dr = await command.ExecuteReaderAsync())
+            using (DbDataReader dr = command.ExecuteReader())
             {
-                while (await dr.ReadAsync())
+                while (dr.Read())
                     yield return TaskListMapper.map(dr);
             }
         }
         public void CreateNew(TaskList tasklist)
         {
-            Console.WriteLine(tasklist.Name);
             using(NpgsqlCommand command = new NpgsqlCommand(
                 "insert into tasks_list(name) values (@name);", conn))
             {
-                Console.WriteLine("Operation is done?");
                 command.Parameters.AddWithValue("name", NpgsqlDbType.Text, tasklist.Name);
                 command.ExecuteNonQuery();  
-                Console.WriteLine("Operation is done!");
             }
         }
 

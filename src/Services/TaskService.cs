@@ -5,7 +5,6 @@ using System;
 using Npgsql;
 using NpgsqlTypes;
 using tasks_list.utils;
-using System.Threading.Tasks;
 
 namespace tasks_list.Services
 {
@@ -18,49 +17,34 @@ namespace tasks_list.Services
             conn = PGConnection.Get();
         }
 
-        public async Task<TaskItem> GetById(long id)
-        {
-            NpgsqlCommand command = new NpgsqlCommand("select id, title, " + 
-            "is_done, list_id from tasks where id = @id", conn);
-            
-            command.Parameters.AddWithValue("id", NpgsqlDbType.Integer, id);
-            
-            using (NpgsqlDataReader dr = await command.ExecuteReaderAsync())
-            {
-                await dr.ReadAsync();
-                return TaskMapper.map(dr);
-            }
-        }
-        
-        public async IAsyncEnumerable<TaskItem> GetByListId(long listId)
+        public IEnumerable<TaskItem> GetByListId(long listId)
         {
             NpgsqlCommand command = new NpgsqlCommand("select id, title, " +
                 "is_done, list_id from tasks where list_id = @list_id", conn);
             
             command.Parameters.AddWithValue("list_id", NpgsqlDbType.Bigint, listId);
 
-            using (NpgsqlDataReader dr = await command.ExecuteReaderAsync())
+            using (NpgsqlDataReader dr = command.ExecuteReader())
             {
-                while (await dr.ReadAsync())
+                while (dr.Read())
                     yield return TaskMapper.map(dr);
             }
         }
 
-        public async IAsyncEnumerable<TaskItem> GetAll()
+        public IEnumerable<TaskItem> GetAll()
         {
             NpgsqlCommand command = new NpgsqlCommand("select id, title, " + 
             "is_done, list_id from tasks", conn);
             
-            using (NpgsqlDataReader dr = await command.ExecuteReaderAsync())
+            using (NpgsqlDataReader dr = command.ExecuteReader())
             {
-                while (await dr.ReadAsync())
+                while (dr.Read())
                     yield return TaskMapper.map(dr);
             }
         }
 
         public void CreateNew(TaskItem task, long listId)
         {
-            Console.WriteLine(listId);
             using(NpgsqlCommand command = new NpgsqlCommand(
                 "insert into tasks(title, list_id) values (@title, @list_id);", conn))
             {

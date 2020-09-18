@@ -4,8 +4,6 @@ using tasks_list.src.Models;
 using tasks_list.Services;
 using System.Linq;
 using System;
-using System.Threading.Tasks;
-
 
 namespace tasks_list.Controllers
 {
@@ -23,14 +21,27 @@ namespace tasks_list.Controllers
         }
 
         [HttpGet("lists")]
-        public async IAsyncEnumerable<TaskList> GetAllLists()
+        public List<TaskList> GetAllLists()
         {
-            IEnumerable<TaskList> lists = taskListService.GetAll().ToEnumerable();
-            foreach (var list in lists)
+            List<TaskList> taskLists = taskListService.GetAll().ToList();
+            
+            foreach (var list in taskLists)
             {
-                list.Tasks = await taskService.GetByListId(list.Id).ToListAsync();
-                yield return list;
+                List<TaskItem> tasks = taskService.GetByListId(list.Id).ToList();
+                list.Tasks = tasks;
             }
+
+            return taskLists;
+        }
+
+
+        [HttpGet("lists/{listId}/tasks")]
+        public TaskList GetAllListTasks(long listId)
+        {
+            TaskList taskList = taskListService.GetById(listId);
+            List<TaskItem> tasks = taskService.GetByListId(listId).ToList();
+            taskList.Tasks = tasks;
+            return taskList;
         }
 
         [HttpPost("lists/{listId}/tasks")]
